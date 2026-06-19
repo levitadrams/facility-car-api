@@ -1,0 +1,43 @@
+.error, .needed {
+    color: red;
+}
+
+.strUp {
+    text-transform: uppercase;
+}
+
+.strLow {
+    text-transform: lowercase;
+}
+
+.strCap {
+    text-transform: capitalize;
+}
+
+/* Espaçamento entre ícones e texto em botões usando GAP (flexbox) */
+.btn,
+button.btn,
+a.btn {
+    gap: 0.5rem !important;
+}
+
+/* Campos readonly com aparência visual de desabilitado */
+.form-control[readonly],
+.form-select[readonly],
+input[readonly],
+textarea[readonly] {
+    background-color: #e9ecef !important;
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+/* Manter fundo branco em input-group quando readonly */
+.input-group .form-control[readonly] {
+    background-color: #e9ecef !important;
+}
+
+/* Input-group-text também fica cinza quando o input é readonly */
+.input-group:has(.form-control[readonly]) .input-group-text {
+    background-color: #e9ecef !important;
+    color: #6c757d;
+}

@@ -1,0 +1,80 @@
+.number-box {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.number-box:hover:not(.sold):not(.reserved) {
+    border-color: #696cff;
+    background-color: #f5f5ff;
+    color: #000000;
+    transform: scale(1.05);
+}
+
+.number-box.selected {
+    background-color: #696cff;
+    color: white;
+    border-color: #696cff;
+}
+
+.number-box.sold {
+    background-color: #ff4d4f;
+    color: white;
+    border-color: #ff4d4f;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.number-box.reserved {
+    background-color: #ffc107;
+    color: white;
+    border-color: #ffc107;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.number-box.available {
+    background-color: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 20px;
+}
+
+.legend-box {
+    width: 30px;
+    height: 30px;
+    border-radius: 5px;
+    border: 2px solid;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.sticky-cart {
+    position: sticky;
+    top: 20px;
+}
