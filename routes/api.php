@@ -39,4 +39,5 @@ Route::middleware('auth:sanctum')->group(function () {
     // Destinations
     Route::apiResource('destinations', RouteDestinationController::class);
     Route::post('/destinations/calculate-route', [RouteDestinationController::class, 'calculateRoute']);
+    Route::get('/destinations/{destination}/route', [RouteDestinationController::class, 'route']);
 });

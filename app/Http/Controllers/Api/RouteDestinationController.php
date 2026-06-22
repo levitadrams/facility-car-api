@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RouteDestination\StoreRequest;
+use App\Http\Requests\RouteDestination\RouteMapRequest;
+use App\Http\Resources\RouteMapResource;
 use App\Models\RouteDestination;
 use App\Services\OsrmService;
+use App\Services\RouteMapService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -136,6 +139,77 @@ class RouteDestinationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erro ao calcular rota: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Retorna rota detalhada (com geometria) entre localização atual e destino
+     *
+     * GET /api/destinations/{id}/route?latitude=-22.90&longitude=-43.20
+     */
+    public function route(Request $request, RouteDestination $destination): JsonResponse
+    {
+        // Valida propriedade do usuário
+        if ($destination->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Acesso negado.'], 403);
+        }
+
+        // Valida coordenadas do destino
+        if ($destination->latitude === null || $destination->longitude === null) {
+            return response()->json([
+                'message' => 'Destino não possui coordenadas válidas.',
+            ], 422);
+        }
+
+        // Valida latitude/longitude da origem
+        $validator = Validator::make($request->query(), [
+            'latitude'  => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Coordenadas de origem inválidas',
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        $originLat  = (float) $request->query('latitude');
+        $originLon  = (float) $request->query('longitude');
+        $destLat    = (float) $destination->latitude;
+        $destLon    = (float) $destination->longitude;
+
+        try {
+            $routeMapService = new RouteMapService();
+
+            $routeData = $routeMapService->calculateDetailedRoute(
+                $originLat,
+                $originLon,
+                $destLat,
+                $destLon
+            );
+
+            // Anexa origem e destino ao resultado para o resource
+            $routeData['origin'] = [
+                'latitude'  => $originLat,
+                'longitude' => $originLon,
+            ];
+            $routeData['destination'] = [
+                'latitude'  => $destLat,
+                'longitude' => $destLon,
+                'name'      => $destination->name,
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data'    => new RouteMapResource($routeData),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
