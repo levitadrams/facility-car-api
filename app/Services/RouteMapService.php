@@ -74,8 +74,8 @@ class RouteMapService
             $rawDistance = (float) ($route['distance'] ?? 0);   // metros
             $rawDuration = (float) ($route['duration'] ?? 0);   // segundos
 
-            // Fator de correção de tráfego
-            $trafficFactor = config('routesgo.default_traffic_factor');
+            // Fator de correção de tráfego dinâmico (horário + distância)
+            $trafficFactor = $this->calculateDynamicTrafficFactor($rawDistance);
             $estimatedDuration = $rawDuration * $trafficFactor;
 
             // Extrair geometria (GeoJSON → array de coordenadas lat/lng)
@@ -239,5 +239,67 @@ class RouteMapService
         $remainingMinutes = $minutes % 60;
 
         return "{$hours}h {$remainingMinutes}min";
+    }
+
+    /**
+     * Calcula fator de tráfego dinâmico baseado em horário e distância
+     * 
+     * @param float $distance Distância da rota em metros
+     * @return float Fator de tráfego calculado
+     */
+    private function calculateDynamicTrafficFactor(float $distance): float
+    {
+        // 1. Obtém fator base por horário
+        $timeFactor = $this->getTimeBasedFactor();
+
+        // 2. Obtém multiplicador por distância
+        $distanceMultiplier = $this->getDistanceMultiplier($distance);
+
+        // 3. Calcula fator final
+        $finalFactor = $timeFactor * $distanceMultiplier;
+
+        // 4. Garante limites razoáveis (mínimo 1.1, máximo 2.5)
+        return max(1.1, min(2.5, $finalFactor));
+    }
+
+    /**
+     * Obtém fator de tráfego baseado no horário atual
+     * 
+     * @return float
+     */
+    private function getTimeBasedFactor(): float
+    {
+        $currentHour = (int) date('H');
+        $timeFactors = config('routesgo.time_based_factors');
+
+        foreach ($timeFactors as $period => $config) {
+            if ($currentHour >= $config['start'] && $currentHour < $config['end']) {
+                return $config['factor'];
+            }
+        }
+
+        // Fallback para fator padrão
+        return config('routesgo.default_traffic_factor');
+    }
+
+    /**
+     * Obtém multiplicador baseado na distância da rota
+     * 
+     * @param float $distance Distância em metros
+     * @return float
+     */
+    private function getDistanceMultiplier(float $distance): float
+    {
+        $adjustments = config('routesgo.distance_adjustments');
+
+        if ($distance < $adjustments['short']['threshold']) {
+            return $adjustments['short']['multiplier'];
+        }
+
+        if ($distance < $adjustments['medium']['threshold']) {
+            return $adjustments['medium']['multiplier'];
+        }
+
+        return $adjustments['long']['multiplier'];
     }
 }

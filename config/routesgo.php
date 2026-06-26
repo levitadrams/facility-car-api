@@ -44,6 +44,67 @@ return [
     ],
 
     /*
+    |--------------------------------------------------------------------------
+    | Fatores Dinâmicos por Horário
+    |--------------------------------------------------------------------------
+    |
+    | Ajusta o fator de tráfego baseado no horário do dia.
+    | Considera padrões de tráfego urbano brasileiro.
+    |
+    */
+    'time_based_factors' => [
+        'dawn' => [              // Madrugada (00h-06h)
+            'start' => 0,
+            'end' => 6,
+            'factor' => 1.15,    // Vias livres
+        ],
+        'morning_rush' => [      // Pico da manhã (06h-09h)
+            'start' => 6,
+            'end' => 9,
+            'factor' => 2.00,    // Trânsito intenso
+        ],
+        'daytime' => [           // Dia (09h-17h)
+            'start' => 9,
+            'end' => 17,
+            'factor' => 1.50,    // Moderado
+        ],
+        'evening_rush' => [      // Pico da tarde (17h-20h)
+            'start' => 17,
+            'end' => 20,
+            'factor' => 2.10,    // Trânsito muito intenso
+        ],
+        'night' => [             // Noite (20h-00h)
+            'start' => 20,
+            'end' => 24,
+            'factor' => 1.30,    // Moderado/leve
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ajuste por Distância
+    |--------------------------------------------------------------------------
+    |
+    | Rotas curtas têm mais impacto de semáforos e trânsito urbano.
+    | Rotas longas têm mais trechos de rodovia com fluxo livre.
+    |
+    */
+    'distance_adjustments' => [
+        'short' => [             // < 5km
+            'threshold' => 5000, // metros
+            'multiplier' => 1.15, // Mais semáforos
+        ],
+        'medium' => [            // 5-20km
+            'threshold' => 20000,
+            'multiplier' => 1.00, // Balanceado
+        ],
+        'long' => [              // > 20km
+            'threshold' => PHP_INT_MAX,
+            'multiplier' => 0.85, // Mais rodovias
+        ],
+    ],
+
+    /*
     | Configuração do servidor OSRM
     */
     'osrm' => [
